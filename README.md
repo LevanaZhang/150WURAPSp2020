@@ -1,1 +1,1 @@
-# AsAmWomenStudentStatsAtCalSp2020
+Data analysis from my URAP Project in Spring 2020, which was part of the 150W Project on Women in Berkeley. My project's specific focus was on Asian American women in academic spaces in UC Berkeley in the past and present. In particular, my research was on the representation of Asian American academic employees in UC Berkeley in the past 10 years, and I focused on a headcount-based analysis on representation.
