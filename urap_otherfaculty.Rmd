@@ -1,0 +1,181 @@
+---
+title: "urap"
+author: "Levana Zhang"
+date: "March 25, 2020"
+output: html_document
+---
+
+```{r data, echo = FALSE}
+library(ggplot2)
+library(dplyr)
+gen_data_raw <- read.csv("otherfaculty_gender_ethnic_data.csv")
+l2l3_data_raw <- read.csv("otherfaculty_gender_ethnic_data_l2l3.csv")
+gen_data <- data.frame(
+  gender = gen_data_raw$Person.Gender.Desc,
+  ethnicity = gen_data_raw$Ethnic.Desc,
+  date = gen_data_raw$Calendar.Yr.Mo.Name.Concat,
+  count = gen_data_raw$Campus.Level.Census.Cnt
+)
+l2l3_data <- data.frame(
+  position = l2l3_data_raw$Level3.Job.Census.Hier.Desc,
+  gender = l2l3_data_raw$Person.Gender.Desc,
+  ethnicity = l2l3_data_raw$Ethnic.Desc,
+  date = l2l3_data_raw$Calendar.Yr.Mo.Name.Concat,
+  count = l2l3_data_raw$Campus.Level.Census.Cnt
+)
+```
+
+```{r gen_data_ethnicities_gender, echo = FALSE}
+## Multiracial (1)
+multi.nonURM_female <- c(rep(0,16), gen_data$count[gen_data$ethnicity == '2 or More Races - Non-URM' & gen_data$gender == "Female"])
+multi.nonURM_male <- c(rep(0,14), gen_data$count[gen_data$ethnicity == '2 or More Races - Non-URM' & gen_data$gender == "Male"])
+multi.URM_female <- c(rep(0,18), gen_data$count[gen_data$ethnicity == '2 or More Races - URM' & gen_data$gender == "Female"])
+multi.URM_male <- c(rep(0,19), gen_data$count[gen_data$ethnicity == '2 or More Races - URM' & gen_data$gender == "Male"])
+
+multi_f <- multi.nonURM_female + multi.URM_female
+multi_m <- multi.nonURM_male + multi.URM_male
+
+## Black (2)
+black_f <- gen_data$count[gen_data$ethnicity == 'African American/Black' & gen_data$gender == "Female"] #ok
+black_m <- gen_data$count[gen_data$ethnicity == 'African American/Black' & gen_data$gender == "Male"] #ok
+
+## Asian (3)
+
+asian_male <- c(rep(0,19), gen_data$count[gen_data$ethnicity == 'Asian' & gen_data$gender == "Male"])
+chinese_female <- gen_data$count[gen_data$ethnicity == "Chinese" & gen_data$gender == "Female"] #ok
+chinese_male <- gen_data$count[gen_data$ethnicity == "Chinese" & gen_data$gender == "Male"] #ok
+filipino_female <- gen_data$count[gen_data$ethnicity == 'Filipino' & gen_data$gender == "Female"] #ok
+filipino_male <- c(3, 2, 4, 2, 4, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 3, 3, 3, 4, 3, 2)
+japan_female <- gen_data$count[gen_data$ethnicity == 'Japanese' & gen_data$gender == "Female"] #ok
+japan_male <- gen_data$count[gen_data$ethnicity == 'Japanese' & gen_data$gender == "Male"] #ok
+korean_female <- c(rep(0,15), gen_data$count[gen_data$ethnicity == 'Korean' & gen_data$gender == "Female"])
+korean_male <- c(rep(0,14), gen_data$count[gen_data$ethnicity == 'Korean' & gen_data$gender == "Male"], 0)
+other.asian_female <- gen_data$count[gen_data$ethnicity == 'Other Asian' & gen_data$gender == "Female"] #ok
+other.asian_male <- gen_data$count[gen_data$ethnicity == 'Other Asian' & gen_data$gender == "Male"] #ok
+pacific_f <- c(rep(0,14), 1, rep(0,7))
+s.asian_female <- gen_data$count[gen_data$ethnicity == 'South Asian' & gen_data$gender == "Female"] #ok
+s.asian_male <- gen_data$count[gen_data$ethnicity == 'South Asian' & gen_data$gender == "Male"] #ok
+vietnam_female <- c(rep(0,15), gen_data$count[gen_data$ethnicity == 'Vietnamese' & gen_data$gender == "Female"])
+vietnam_male <- c(rep(0,16), gen_data$count[gen_data$ethnicity == 'Vietnamese' & gen_data$gender == "Male"])
+
+aapi_f <- chinese_female + filipino_female + japan_female + korean_female + other.asian_female + pacific_f + s.asian_female + vietnam_female
+
+asian_f <- chinese_female + filipino_female + japan_female + korean_female + other.asian_female + s.asian_female + vietnam_female
+asian_m <- asian_male + chinese_male + filipino_male + japan_male + korean_male + other.asian_male + s.asian_male + vietnam_male
+
+## Unknown (4)
+decline_female <- gen_data$count[gen_data$ethnicity == 'Decline to State' & gen_data$gender == "Female"] #ok
+decline_male <- gen_data$count[gen_data$ethnicity == 'Decline to State' & gen_data$gender == "Male"] #ok
+unknown_female <- c(rep(0, 13), gen_data$count[gen_data$ethnicity == 'Unknown' & gen_data$gender == "Female"], rep(0,8))
+
+unknown_f <- decline_female + unknown_female
+unknown_m <- decline_male
+
+## White (5)
+euro_female <- c(rep(0,14), gen_data$count[gen_data$ethnicity == 'European' & gen_data$gender == "Female"])
+euro_male <- c(rep(0,14), gen_data$count[gen_data$ethnicity == 'European' & gen_data$gender == "Male"])
+white_female <- gen_data$count[gen_data$ethnicity == 'White' & gen_data$gender == "Female"] #ok
+white_male <- gen_data$count[gen_data$ethnicity == 'White' & gen_data$gender == "Male"] #ok
+
+white_f <- euro_female + white_female
+white_m <- euro_male + white_female
+
+## latinx (6)
+hispanic_female <- c(rep(0,17), gen_data$count[gen_data$ethnicity == 'Hispanic' & gen_data$gender == "Female"], rep(0, 2))
+hispanic_male <- c(rep(0,16), 1, 0, 2, 1, 2, 2)
+mexican_female <- gen_data$count[gen_data$ethnicity == 'Mexican American/Chicano' & gen_data$gender == "Female"] #ok
+mexican_male <- gen_data$count[gen_data$ethnicity == 'Mexican American/Chicano' & gen_data$gender == "Male"] #ok
+other.hisp_female <- gen_data$count[gen_data$ethnicity == 'Other Hispanic/Latino' & gen_data$gender == "Female"] #ok
+other.hisp_male <- gen_data$count[gen_data$ethnicity == 'Other Hispanic/Latino' & gen_data$gender == "Male"] #ok
+
+latinx_f <- hispanic_female + mexican_female + other.hisp_female
+latinx_m <- hispanic_male + mexican_male + other.hisp_male
+
+## MENA (7)
+mideast_female <- c(rep(0,14), gen_data$count[gen_data$ethnicity == 'Middle Eastern' & gen_data$gender == "Female"])
+mideast_male <- c(rep(0,14), gen_data$count[gen_data$ethnicity == 'Middle Eastern' & gen_data$gender == "Male"])
+n.african_male <- c(rep(0,14), gen_data$count[gen_data$ethnicity == 'North African' & gen_data$gender == "Male"])
+
+mena_f <- mideast_female
+mena_m <- mideast_male + n.african_male
+
+## Native American (8)
+native.am_f <- gen_data$count[gen_data$ethnicity == 'Native American/Alaska Native' & gen_data$gender == "Female"] #ok
+native.am_m <- c(11, 8, 6, 6, 6, 5, 6, 4, 5, 4, 6, 4, 2, 0, 2, 6, 5, 5, 5, 2, 3, 1)
+```
+
+```{r l2l3_data}
+
+```
+
+```{r graphs, echo = FALSE}
+asian <- data.frame(
+  Gender = c(rep("Female", length(asian_f)), rep("Male", length(asian_m))), 
+  Date = rep(seq(as.Date("2008/4/1"), by = "6 month", length.out = 22), 2), 
+  Count = c(asian_f, asian_m)
+  )
+asian$Gender <- as.factor(asian$Gender)
+asian_gender_graph <- ggplot(data = asian, aes(x = Date, y = Count, color = Gender)) + 
+  geom_line(size = 1) + ggtitle("Asians Among Other Faculty, by Gender")
+asian_gender_graph
+ggsave("asian_women_otherfaculty_gender.png")
+
+aapi <- data.frame(
+  Gender = c(rep("Female", length(aapi_f)), rep("Male", length(asian_m))), 
+  Date = rep(seq(as.Date("2008/4/1"), by = "6 month", length.out = 22), 2), 
+  Count = c(aapi_f, asian_m)
+  )
+aapi$Gender <- as.factor(aapi$Gender)
+aapi_gender_graph <- ggplot(data = aapi, aes(x = Date, y = Count, color = Gender)) + 
+  geom_line(size = 1) + ggtitle("AAPI Among Other Faculty, by Gender")
+aapi_gender_graph
+asian$Gender == "Female"
+women <- data.frame(
+  Race =c(
+    rep('Multiracial', length(multi_f)),
+    rep('Black', length(black_f)),
+    rep('AAPI', length(aapi_f)),
+    rep('Unknown', length(unknown_f)),
+    rep('White', length(white_f)),
+    rep('Latinx', length(latinx_f)),
+    rep('MENA', length(mena_f)),
+    rep('Native American/Alaska Native', length(native.am_f))
+  ),
+  Date = rep(seq(as.Date("2008/4/1"), by = "6 month", length.out = 22), 8),
+  Count = c(multi_f, black_f, aapi_f, unknown_f, white_f, latinx_f, mena_f, native.am_f)
+)
+women$Race <- as.factor(women$Race)
+women_race_graph <- ggplot(data = women, aes(x = Date, y = Count, color = Race)) + 
+  geom_line(size = 1) + ggtitle("Women Among Other Faculty, by Race")
+women_race_graph
+
+women_AA_PI_split <- data.frame(
+  Race =c(
+    rep('Multiracial', length(multi_f)),
+    rep('Black', length(black_f)),
+    rep('Asian', length(asian_f)),
+    rep('Pacific Islander', length(pacific_f)),
+    rep('Unknown', length(unknown_f)),
+    rep('White', length(white_f)),
+    rep('Latinx', length(latinx_f)),
+    rep('MENA', length(mena_f)),
+    rep('Native American/Alaska Native', length(native.am_f))
+  ),
+  Date = rep(seq(as.Date("2008/4/1"), by = "6 month", length.out = 22), 9),
+  Count = c(multi_f, black_f, asian_f, pacific_f, unknown_f, white_f, latinx_f, mena_f, native.am_f)
+)
+women_AA_PI_split$Race <- as.factor(women_AA_PI_split$Race)
+women_AA_PI_split_race_graph <- ggplot(data = women_AA_PI_split, aes(x = Date, y = Count, color = Race)) + geom_line(size = 1) + ggtitle("Women Among Other Faculty, by Race") +
+  scale_color_manual(values = c("red3","orangered","lawngreen","darkgreen","deepskyblue","darkblue","slateblue","purple4","orchid"))
+women_AA_PI_split_race_graph
+ggsave("asian_women_otherfaculty_ethnicity.png")
+```
+```{r}
+male_female_asian_ratio = asian[asian$Gender == "Male",]$Count/asian[asian$Gender == "Female",]$Count
+male_female_asian_ratio
+min(male_female_asian_ratio)
+
+white_asian_f_ratio = women_AA_PI_split[women_AA_PI_split$Race == "White",]$Count/women_AA_PI_split[women_AA_PI_split$Race == "Asian",]$Count
+white_asian_f_ratio
+mean(white_asian_f_ratio)
+```
